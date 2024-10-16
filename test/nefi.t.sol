@@ -104,4 +104,31 @@ contract NefiTokenTest is Test {
         deodToken.mint(user1, userBalance);
         assertEq(deodToken.balanceOf(user1), userBalance);
     }
+
+     //----------------------------------------------------------------------------------//
+
+    // Fuzz Test: BuyNefiToken
+  function testFuzz_BuyNefiToken(uint256 amountIn) public {
+    // Limit the fuzzing range to a valid range for the test
+    vm.assume(amountIn > 0 && amountIn <= 10000 * 1e18); 
+    vm.startPrank(user1);
+
+    uint256 userBalance = amountIn; 
+    deodToken.mint(user1, userBalance); 
+
+    assertEq(deodToken.balanceOf(user1), userBalance); 
+
+    deodToken.approve(address(nefiToken), userBalance); 
+
+    nefiToken.BuyNefiToken(userBalance); 
+
+
+    uint256 expectedNefiToMint = (amountIn * 70) / 100; 
+    uint256 expectedDeodStaked = amountIn;
+   
+    assertEq(nefiToken.unclaimedNefiTokens(user1), expectedNefiToMint); 
+    assertEq(nefiToken.deodStaked(user1), expectedDeodStaked);
+
+    vm.stopPrank();
+  }
 }
